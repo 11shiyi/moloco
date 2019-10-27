@@ -1,0 +1,55 @@
+data<-read.csv("~/Desktop/oa/oa2.csv",header = F)
+attach(data)
+
+#Try Linear Regression
+fit1<-lm(V3~V2+V1)
+#Show regression results using P-value and R squared value
+summary(fit1)
+#Check AIC value
+AIC(fit1)
+layout(matrix(c(1,2,3,4),2,2)) # optional 4 graphs/page
+plot(fit1)
+# since C is not in a range between 0 to 1, logistic regression was not considered
+
+#Polynomial regression
+fit2<-lm(V3 ~ poly(V1,degree=2, raw=TRUE)+poly(V2, degree=2, raw=TRUE))
+summary(fit2)
+#Show regression results using P-value and R squared value
+layout(matrix(c(1,2,3,4),2,2)) # optional 4 graphs/page
+plot(fit2)
+anova(fit2,fit1)
+#compare the two polynomial regression of fit2 (polynomial regression with degree of 2) and fit1 (linear regression). Since the result shows P=0.3537, we will keep fit2, as fit3 is not significantly better than fit2
+
+#Polynomial regression with degree of 3
+fit3<-lm(V3 ~ poly(V1,degree=3, raw=TRUE)+poly(V2, degree=3, raw=TRUE))
+summary(fit3)
+#compare the two polynomial regression of fit2 and fit3. Since the result shows P=0.3537, we will keep fit2, as fit3 is not significantly better than fit2
+anova(fit2,fit3)
+
+#Stepwise Regression
+library(MASS)
+fit4<-step(fit1, direction = "both", trace = FALSE)
+summary(fit4)
+anova(fit2,fit4)
+#compare fit2 (polynomial regression) and fit4 (stepwise regression) Since the result shows P=0.5251, we will keep fit2, as fit3 is not significantly better than fit2
+
+#from all regressions mentioned above, noticed that p-value is large (greater than 0.05) and R-squared value is small (closer to 0).
+#Observe the data
+summary(data)
+#Noticed that the mean of variable V1 are greater than their median, which indicate the data is skewed
+#Same logic applied to variable V3,the dependent variable. In addtion, V3 contains outliers within the provided data
+#Hence,a log transformation is applied in the following regression model analysis.
+
+#linear regression
+fit7<-lm(log(V3)~log(V1)+log(V2))
+summary(fit7)
+#linear regression,no log transformation applied to V2. from the summary of the data, V2 is not skewed
+fit8<-lm(log(V3)~ log(V1)+V2)
+summary(fit8)
+#from the R-squred value and Pvalue, fit 8 is a better fit
+#polynomial regression with log transformation
+fit9<-lm(log(V3)~ poly(log(V1),degree=2,raw=T)+poly(V2,degree=2,raw=T))
+summary(fit9)
+anova(fit9)
+
+#In conclusion, fit9 is the best regression model as the P-value is less than 0.05 and R-squared value is 0.9333.
